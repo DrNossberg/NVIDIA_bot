@@ -24,7 +24,7 @@ class LDLC(object):
             FE.add_url(LDLC_URL.replace("{GPU}", FE.name))
         self.Card_list = Card_list
         self.brand_list = manufacturer
-        self.card_dispo = []
+        self.card_dispo = {}
 
     def search_GPU(self):
         """Pour chaque card dans la liste de cartes 30XX, on check les 
@@ -54,45 +54,29 @@ class LDLC(object):
 
 
     def scrap_search_gpu(self, FE):
-        """check la recherche de LDLC"""
+        """check la recherche de LDLC
+         on fait un dico avec toutes les cartes disponibles. self.card_dispo["nom de la carte"] = Objet Card
+        dès qu'une carte n'est plus dispo, elle est retirée du dico. Simple, on peut gérer autant de cartes que l'on vaut"""
         req = requests.get(FE.get_url(LDLC_search_link))
         if req.status_code != 200:
             FE.set_status(0) # banned
+            return
 
-        soup = BeautifulSoup(req.content,"html.parser")
-
-
-        # .string
-        for item in soup.find('div', {"class": "listing-product"}).findAll('li'):
-            # print(item.find('Web').get_text())
-            try:
-                if re.search(r"Web\n(.*)", item.text).group(1) != "Rupture" :
-                    FE.set_status(2) # in stock
-                elif FE.get_status() == 2 :
-                    alert("Fin du stock pour la" + FE.name)
-                    FE.set_status(1)
-            except Exception as e:
-                print(e)
-                continue
-            try:
-                prix = str(re.search(r"(.*)€(.*)", item.text).group(0))
-            except Exception as e:
-                print(e)
-                continue
-
-
+        for item in BeautifulSoup(req.content,"html.parser").find('div', {"class": "listing-product"}).findAll('li'):
             line = item.find('h3').find('a') 
             item_name = item.find('h3').get_text()
             item_brand = item_name.split(' ')[0]
-            if FE.get_status() == 2 and (self.brand_list == [] or item_brand in self.brand_list) :
-                # self.card_dispo.append(item_name)
-                alert(FE.name + "Carte disponible ! Dans la recherche ici :" + 
-                    line['href'] )
 
-        # mieux gérer ici, genre un tableau dans le tableau ou une merde du genre,
-        # tableau dans les cards ou je sais pas ou ici, pareil pr PCComponent
-
-        # améliorer le truc pour avoir le name en 1er, puis la dispo, puis le prix et enfin le save
-
-
-# a href="/fiche/
+            if self.brand_list != [] and item_brand not in self.brand_list: # 'not in' => !/ perfs \!
+                continue
+            try:
+                if re.search(r"Web\n(.*)", item.text).group(1) != "Rupture" and item _name not in self.card_dispo: # available
+                    self.card_dispo[item_name] = (Card(item_name, "https://www.ldlc.com/" + line['href'], 2, 
+                    str(re.search(r"(.*)€(.*)", item.text).group(0))))  # in stock
+                    continue
+                    # maybe useless                       maybe this only do the trick
+                if item _name in self.card_dispo and self.card_dispo[item_name].get_status() == 2 : # no longer available 
+                    self.card_dispo[item_name].set_status(1)
+                    del self.card_dispo[item_name]
+            except Exception as e:
+                print(e)
