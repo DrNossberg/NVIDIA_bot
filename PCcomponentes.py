@@ -16,7 +16,7 @@ class PCComponents(object):
         super(PCComponents, self).__init__()
         PCC_URL ='https://www.pccomponentes.com/tarjetas-graficas/geforce-rtx-{GPU}-series'
         for FE in Card_list:
-            FE.add_url(PCC_URL.replace("{GPU}", FE.name))
+            FE.add_url(PCC_URL.replace("{GPU}", FE.name[0:4]))
         self.Card_list = Card_list
         self.brand_list = manufacturer
         self.card_dispo = {}
@@ -35,13 +35,11 @@ class PCComponents(object):
                     del self.card_dispo[item_name]
                 continue
             prix = float(item["data-price"])
-            print(prix)
-            
             # if prix < prixMax : ? faudrais faire un tableau de sa, avec prix max pour chaque carte
             # brand ? extraire la brand du nom de la carte
             
             if item_name not in self.card_dispo :
-                self.card_dispo[item_name] = Card(item_name, "https://www.pccomponentes.com" + str(item['href']), 2, prix) #just entered in stock !
+                self.card_dispo[item_name] = Card(item_name, "https://www.pccomponentes.com" + str(item['href']), 2, str(prix)) #just entered in stock !
                 continue
             # r2 = requests.get(LienHyperText,timeout=(3.05, 27))
                 # soup2 = BeautifulSoup(r2.content,'html.parser')

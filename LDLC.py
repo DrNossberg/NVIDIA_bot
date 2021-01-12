@@ -49,7 +49,6 @@ class LDLC(object):
          on fait un dico avec toutes les cartes disponibles. self.card_dispo["nom de la carte"] = Objet Card
         dès qu'une carte n'est plus dispo, elle est retirée du dico. Simple, on peut gérer autant de cartes que l'on vaut"""
         req = requests.get(FE.get_url(LDLC_search_link))
-        print ("status code :" ,req.status_code)
         if req.status_code != 200:
             FE.set_status(0) # banned ou timed out
             return

@@ -21,7 +21,7 @@ from Card import Card
 
 
 PrixCG          = -1    #    Le max que vous soyez prêt à mettre. Laissez -1 pour tout voir
-seeked_GPU      = [3]    #   0 = 3060, 1 = 3070, 2 = 3080, 3 = 3090.                   Si vous voulez tout voir laisser vide
+seeked_GPU      = [0, 1]    #   0 = 3060, 1 = 3070, 2 = 3080, 3 = 3090.                   Si vous voulez tout voir laisser vide
 brand_list      = []    #    marque que vous recherchez (site LDLC).                 Si vous voulez tout voir laisser vide
                         #       ex : Je veux que FE et Gainward :
                         #            = ["NVIDIA", "Gainward"]
@@ -39,7 +39,7 @@ Card_list = [ Card_list[i] for i in range(0, len(Card_list)) if i in seeked_GPU 
 
 if __name__ == "__main__":
     alert("Connecting...")
-    alerte("Looking for", ",".join([FE[0] for FE in Card_list]))
+    alert("Looking for " + ",".join([FE.name for FE in Card_list]))
 
     LDLC_market = LDLC(Card_list, brand_list)
     PCC_market = PCComponents(Card_list, brand_list)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     for FE in Card_list :
         FE.dump()
     while True :
-        for FE in self.Card_list:
+        for FE in Card_list:
             if FE.get_status(LDLC_FE_link) != 0 :
                 LDLC_market.ping_FE_page(FE)
             if FE.get_status(PCC_search_link) != 0 :
