@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
+from Discord import *
+
+
 PAGE_URL= 0
 STATUS  = 1
 
@@ -50,13 +53,13 @@ class Card(object):
             self.actual = 0
 
     def alert_available(self) :
-        alert(self.name, " disponible ! : ", self.pages[self.actual][PAGE_URL], "" if prix == -1 else "au prix de : " + self.prix)
+        alert(self.name + ("" if self.prix == -1 else "\t: " + self.prix) + " dispo ! :\n\t" + self.pages[self.actual][PAGE_URL] )
 
     def alert_end_availability(self):
-        alert(self.name, " n'est plus disponible.")
+        alert(self.name + " n'est plus disponible.")
 
     def alert_ban():
-        alert("Vous êtes ban de cette ip :", self.pages[self.actual][PAGE_URL])
+        alert("Vous êtes ban de cette ip :" + self.pages[self.actual][PAGE_URL])
 
     def dump(self):
         print(self.name + " :\n\t", "\n\t".join("{0}".format(page) for page in self.pages), sep='')

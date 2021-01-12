@@ -7,6 +7,7 @@ import requests
 import re
 
 from Discord import *
+from Card import Card
 
 
 LDLC_FE_link        = 0
@@ -26,28 +27,18 @@ class LDLC(object):
         self.brand_list = manufacturer
         self.card_dispo = {}
 
-    def search_GPU(self):
-        """Pour chaque card dans la liste de cartes 30XX, on check les 
-        pages Founder puis la recherche LDLC"""
-        for FE in self.Card_list:
-            if FE.get_status(LDLC_FE_link) != 0 :
-                self.ping_FE_page(FE)
-            sleep(1)
-            if FE.get_status(LDLC_search_link) != 0 :
-                self.scrap_search_gpu(FE)
-            sleep(10)
 
     def ping_FE_page(self, FE):
         """check chaque page founder de LDLC"""
         status_code = requests.get(FE.get_url(LDLC_FE_link)).status_code
         if status_code == 200 :
             if FE.get_status() != 2 :
-                alert(FE.name + "FE disponible ! Ici :" + FE.get_url(LDLC_FE_link))
+                alert(FE.name + "FE disponible ! Ici :" + FE.get_url(LDLC_FE_link)) # alerte en double.
                 FE.set_status(2) # in stock
             return
         if status_code in [404, 410] :
             if FE.get_status() == 2 :
-                alert("Fin du stock pour la" + FE.name + "FOUNDER EDITION")
+                alert("Fin du stock pour la" + FE.name + "FOUNDER EDITION") # pareil
                 FE.set_status(1) # Out of stock
             return
         FE.set_status(0) # banned
@@ -58,8 +49,9 @@ class LDLC(object):
          on fait un dico avec toutes les cartes disponibles. self.card_dispo["nom de la carte"] = Objet Card
         dès qu'une carte n'est plus dispo, elle est retirée du dico. Simple, on peut gérer autant de cartes que l'on vaut"""
         req = requests.get(FE.get_url(LDLC_search_link))
+        print ("status code :" ,req.status_code)
         if req.status_code != 200:
-            FE.set_status(0) # banned
+            FE.set_status(0) # banned ou timed out
             return
 
         for item in BeautifulSoup(req.content,"html.parser").find('div', {"class": "listing-product"}).findAll('li'):
@@ -70,12 +62,12 @@ class LDLC(object):
             if self.brand_list != [] and item_brand not in self.brand_list: # 'not in' => !/ perfs \!
                 continue
             try:
-                if re.search(r"Web\n(.*)", item.text).group(1) != "Rupture" and item _name not in self.card_dispo: # available
-                    self.card_dispo[item_name] = (Card(item_name, "https://www.ldlc.com/" + line['href'], 2, 
+                if re.search(r"Web\n(.*)", item.text).group(1) != "Rupture" and item_name not in self.card_dispo: # available
+                    self.card_dispo[item_name] = (Card(item_name, "https://www.ldlc.com" + line['href'], 2, 
                     str(re.search(r"(.*)€(.*)", item.text).group(0))))  # in stock
                     continue
                     # maybe useless                       maybe this only do the trick
-                if item _name in self.card_dispo and self.card_dispo[item_name].get_status() == 2 : # no longer available 
+                if item_name in self.card_dispo and self.card_dispo[item_name].get_status() == 2 : # no longer available 
                     self.card_dispo[item_name].set_status(1)
                     del self.card_dispo[item_name]
             except Exception as e:
